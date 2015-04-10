@@ -3,13 +3,17 @@ package cucumber.eclipse.editor.editors;
 import static cucumber.eclipse.editor.editors.DocumentUtil.getDocumentLanguage;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.model.Background;
+import gherkin.formatter.model.BasicStatement;
+import gherkin.formatter.model.DescribedStatement;
 import gherkin.formatter.model.Examples;
 import gherkin.formatter.model.Feature;
 import gherkin.formatter.model.Scenario;
 import gherkin.formatter.model.ScenarioOutline;
 import gherkin.formatter.model.Step;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -36,6 +40,8 @@ public class GherkinErrorMarker implements Formatter {
 	private final IMarkerManager markerManager;
 	private final IFile file;
 	private final IDocument document;
+	private final List<PositionedElement> elements = new ArrayList<PositionedElement>();
+	private final Stack<PositionedElement> stack = new Stack<PositionedElement>();
 
 	public GherkinErrorMarker(IStepProvider stepProvider, IMarkerManager markerManager, IFile inputfile,
 			IDocument doc) {
@@ -45,9 +51,8 @@ public class GherkinErrorMarker implements Formatter {
 		this.document = doc;
 	}
 
-	public void removeExistingMarkers() {
-		markerManager.removeAll(ERROR_ID, file);
-		markerManager.removeAll(UNMATCHED_STEP_ERROR_ID, file);
+	public List<PositionedElement> getCreatedElements() {
+		return elements;
 	}
 
 	/*
@@ -59,6 +64,7 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void background(Background arg0) {
+		handleStepContainer(arg0);
 	}
 
 	/*
@@ -86,6 +92,9 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void eof() {
+		while (!stack.isEmpty()) {
+			stack.pop().setEndLine(document.getNumberOfLines());
+		}
 	}
 
 	/*
@@ -96,6 +105,9 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void examples(Examples arg0) {
+		int lastLine = getLastExamplesLine(arg0);
+		newPositionedElement(arg0).setEndLine(lastLine);
+		stack.peek().setEndLine(lastLine);
 	}
 
 	/*
@@ -105,6 +117,7 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void feature(Feature arg0) {
+		stack.push(newPositionedElement(arg0));
 	}
 
 	/*
@@ -115,8 +128,9 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void scenario(Scenario arg0) {
+		handleStepContainer(arg0);
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 *
@@ -125,6 +139,7 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void scenarioOutline(ScenarioOutline arg0) {
+		handleStepContainer(arg0);
 	}
 
 	/*
@@ -134,6 +149,10 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void step(Step stepLine) {
+		PositionedElement element = newPositionedElement(stepLine);
+		stack.peek().addChild(element);
+		stack.peek().setEndLine(stepLine.getLineRange().getLast());
+		
 		String stepString = stepLine.getKeyword() + stepLine.getName();
 		cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(
 				getDocumentLanguage(document), stepProvider.getStepsInEncompassingProject(file),
@@ -187,6 +206,29 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void uri(String arg0) {
+	}
+
+	private void handleStepContainer(DescribedStatement stmt) {
+		if (stack.peek().isStepContainer()) {
+			stack.pop();
+		}
+		PositionedElement element = newPositionedElement(stmt);
+		stack.peek().addChild(element);
+		stack.push(element);
+	}
+
+	private PositionedElement newPositionedElement(BasicStatement stmt) {
+		PositionedElement element = new PositionedElement(document, stmt);
+		elements.add(element);
+		return element;
+	}
+
+	private int getLastExamplesLine(Examples examples) {
+		int lastline = examples.getLineRange().getLast();
+		if (!examples.getRows().isEmpty()) {
+			lastline = examples.getRows().get(examples.getRows().size() - 1).getLine(); 
+		}
+		return lastline;
 	}
 
 	private void markUnmatchedStep(IFile featureFile, IDocument doc,

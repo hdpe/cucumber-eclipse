@@ -1,15 +1,10 @@
 package cucumber.eclipse.editor.editors;
 
-import gherkin.lexer.LexingError;
-import gherkin.parser.Parser;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -30,8 +25,9 @@ import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 
 public class Editor extends TextEditor {
 
+	private GherkinModel model;
 	private ColorManager colorManager;
-	private IEditorInput input;
+	private IFileEditorInput input;
 
 	public Editor() {
 		super();
@@ -134,19 +130,14 @@ public class Editor extends TextEditor {
 	@Override
 	protected void doSetInput(IEditorInput newInput) throws CoreException {
 		super.doSetInput(newInput);
-		input = newInput;
-		validateAndMark();
+		input = (IFileEditorInput) newInput;
+		model = new GherkinModel(new ExtensionRegistryStepProvider(), new MarkerManager(),
+				input.getFile());
 	}
 
 	public void dispose() {
 		super.dispose();
 		colorManager.dispose();
-	}
-
-	@Override
-	protected void editorSaved() {
-		super.editorSaved();
-		validateAndMark();
 	}
 
 	public Object getAdapter(Class required) {
@@ -160,19 +151,7 @@ public class Editor extends TextEditor {
 		return super.getAdapter(required);
 	}
 
-	private void validateAndMark() {
-		IDocument doc = getDocumentProvider().getDocument(input);
-		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
-		IFile featureFile = fileEditorInput.getFile();
-		GherkinErrorMarker marker = new GherkinErrorMarker(new ExtensionRegistryStepProvider(),
-				new MarkerManager(), featureFile,
-				doc);
-		marker.removeExistingMarkers();
-
-		Parser p = new Parser(marker, false);
-		try {
-			p.parse(doc.get(), "", 0);
-		} catch (LexingError l) {
-		}
+	public GherkinModel getModel() {
+		return model;
 	}
 }
