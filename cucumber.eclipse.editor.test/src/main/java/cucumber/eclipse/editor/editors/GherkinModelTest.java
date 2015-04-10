@@ -1,12 +1,21 @@
 package cucumber.eclipse.editor.editors;
 
+import static java.util.Collections.emptySet;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.util.Set;
+
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.Position;
 import org.junit.Test;
+
+import cucumber.eclipse.editor.markers.IMarkerManager;
+import cucumber.eclipse.editor.steps.IStepProvider;
+import cucumber.eclipse.editor.tests.TestFile;
+import cucumber.eclipse.steps.integration.Step;
 
 public class GherkinModelTest {
 
@@ -23,7 +32,7 @@ public class GherkinModelTest {
                 + "  Scenario: 2\n"
                 + "    Given z\n";
         Document document = new Document(source);
-        GherkinModel model = new GherkinModel();
+        GherkinModel model = new GherkinModel(newStepProvider(), newMarkerManager(), new TestFile());
         
         model.updateFromDocument(document);
         Position range = model.getFoldRanges().get(1);
@@ -46,7 +55,7 @@ public class GherkinModelTest {
                 + "  Scenario: 2\n"
                 + "    Given z\n";
         Document document = new Document(source);
-        GherkinModel model = new GherkinModel();
+        GherkinModel model = new GherkinModel(newStepProvider(), newMarkerManager(), new TestFile());
         
         model.updateFromDocument(document);
         Position range = model.getFoldRanges().get(1);
@@ -69,7 +78,7 @@ public class GherkinModelTest {
                 + "  Scenario: 2\n"
                 + "    Given z\n";
         Document document = new Document(source);
-        GherkinModel model = new GherkinModel();
+        GherkinModel model = new GherkinModel(newStepProvider(), newMarkerManager(), new TestFile());
         
         model.updateFromDocument(document);
         Position range = model.getFoldRanges().get(2);
@@ -95,7 +104,7 @@ public class GherkinModelTest {
                 + "  Scenario: 2\n"
                 + "    Given z\n";
         Document document = new Document(source);
-        GherkinModel model = new GherkinModel();
+        GherkinModel model = new GherkinModel(newStepProvider(), newMarkerManager(), new TestFile());
         
         model.updateFromDocument(document);
         PositionedElement feature = model.getFeatureElement();
@@ -120,5 +129,23 @@ public class GherkinModelTest {
                 feature.getChildren().get(2).getChildren().size(), is(1));
         assertThat("feature.children[2].children[0].step",
                 feature.getChildren().get(2).getChildren().get(0).isStep(), is(true));
+    }
+    
+    private IStepProvider newStepProvider() {
+        return new IStepProvider() {
+            public Set<Step> getStepsInEncompassingProject(IFile featurefile) {
+                return emptySet();
+            }
+        };
+    }
+
+    private IMarkerManager newMarkerManager() {
+        return new IMarkerManager() {
+            public void removeAll(String type, IFile file) {
+            }
+            
+            public void add(String type, IFile file, int severity, String message, int lineNumber, int charStart, int charEnd) {
+            }
+        };
     }
 }
