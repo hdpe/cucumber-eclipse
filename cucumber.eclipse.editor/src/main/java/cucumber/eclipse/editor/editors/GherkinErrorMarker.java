@@ -37,10 +37,10 @@ public class GherkinErrorMarker implements Formatter {
 
 	private static final String UNMATCHED_STEP_ERROR_ID = "cucumber.eclipse.editor.editors.Editor.unmatchedsteperror";
 
-	IEditorPart editor;
-	IStepProvider stepProvider;
-	IFile file;
-	IDocument document;
+	private IEditorPart editor;
+	private IStepProvider stepProvider;
+	private IFile file;
+	private IDocument document;
 
 	public GherkinErrorMarker(IEditorPart editor, IStepProvider stepProvider, IFile inputfile, IDocument doc) {
 		this.editor = editor;
