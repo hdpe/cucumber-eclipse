@@ -221,8 +221,8 @@ public class GherkinErrorMarker implements Formatter {
 				"Step does not have a matching glue code.");
 
 		FindReplaceDocumentAdapter find = new FindReplaceDocumentAdapter(doc);
-		IRegion region = find.find(0, stepLine.getName(), true, true, false,
-				false);
+		IRegion region = find.find(doc.getLineOffset(stepLine.getLine() - 1),
+				stepLine.getName(), true, true, false, false);
 
 		attributes.put(IMarker.CHAR_START, region.getOffset());
 		attributes.put(IMarker.CHAR_END,
