@@ -52,10 +52,10 @@ public class GherkinErrorMarker implements Formatter {
 	public void removeExistingMarkers() {
 		try {
 			file.deleteMarkers(ERROR_ID, true, IResource.DEPTH_ZERO);
+			file.deleteMarkers(UNMATCHED_STEP_ERROR_ID, true, IResource.DEPTH_ZERO);
 		} catch (CoreException e) {
 			Activator.getDefault().getLog().log(e.getStatus());
 		}
-		deleteUnmatchedStepsMarkers(file);
 	}
 
 	/*
@@ -200,15 +200,6 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void uri(String arg0) {
-	}
-
-	private void deleteUnmatchedStepsMarkers(IFile featureFile) {
-		try {
-			featureFile.deleteMarkers(UNMATCHED_STEP_ERROR_ID, true,
-					IResource.DEPTH_ZERO);
-		} catch (CoreException e1) {
-			e1.printStackTrace();
-		}
 	}
 
 	private void markUnmatchedStep(IFile featureFile, IDocument doc,
