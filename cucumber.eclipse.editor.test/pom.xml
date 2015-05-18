@@ -11,4 +11,22 @@
 	<artifactId>cucumber.eclipse.editor.test</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<target>
+						<artifact>
+							<groupId>cucumber.eclipse</groupId>
+							<artifactId>cucumber.eclipse.testtargetdefinition</artifactId>
+							<version>${project.version}</version>
+						</artifact>
+					</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

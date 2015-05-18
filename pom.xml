@@ -22,7 +22,16 @@
 		<module>cucumber.eclipse.steps.jdt</module>
 		<module>cucumber.eclipse.p2updatesite</module>
 		<module>cucumber.eclipse.targetdefinition</module>
+		<module>cucumber.eclipse.testtargetdefinition</module>
 	</modules>
+
+	<repositories>
+		<repository>
+			<id>orbit-luna-sr2</id>
+			<layout>p2</layout>
+			<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20150124073747/repository/</url>
+		</repository>
+	</repositories>
 
 	<build>
 		<plugins>
