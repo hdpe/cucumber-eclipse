@@ -18,6 +18,7 @@ import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.editor.tests.TestFile;
 import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.StepListener;
 
 public class GherkinErrorMarkerTest {
 
@@ -51,8 +52,14 @@ public class GherkinErrorMarkerTest {
 
     private IStepProvider newStepProvider() {
         return new IStepProvider() {
+            public void addStepListener(StepListener listener) {
+            }
+
             public Set<Step> getStepsInEncompassingProject() {
                 return emptySet();
+            }
+
+            public void reloadSteps() {
             }
         };
     }

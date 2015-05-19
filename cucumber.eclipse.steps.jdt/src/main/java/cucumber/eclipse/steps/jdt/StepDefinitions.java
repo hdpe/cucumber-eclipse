@@ -43,10 +43,24 @@ import org.eclipse.jface.text.Document;
 
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.StepListener;
+import cucumber.eclipse.steps.integration.StepsChangedEvent;
 
 public class StepDefinitions implements IStepDefinitions {
 
+    public static StepDefinitions INSTANCE;
+    
+    public StepDefinitions() {
+        INSTANCE = this;
+    }
+    
+    private List<StepListener> listeners = new ArrayList<StepListener>();
+    
 	private Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
+	
+	public void addStepListener(StepListener listener) {
+	    this.listeners.add(listener);
+	}
 	
 	@Override
 	public Set<Step> getSteps(IFile featurefile) {
@@ -75,7 +89,17 @@ public class StepDefinitions implements IStepDefinitions {
 		return steps;
 	}
 	
-	private List<Step> getCukeAnnotations(IJavaProject javaProject, ICompilationUnit compUnit)
+	public void removeStepListener(StepListener listener) {
+	    this.listeners.remove(listener);
+	}
+	
+	public void notifyListeners(StepsChangedEvent event) {
+        for (StepListener listener : listeners) {
+            listener.onStepsChanged(event);
+        }
+    }
+
+    private List<Step> getCukeAnnotations(IJavaProject javaProject, ICompilationUnit compUnit)
 			throws JavaModelException, CoreException {
 		List<Step> steps = new ArrayList<Step>();
 		
