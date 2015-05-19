@@ -12,4 +12,6 @@ public interface IStepProvider {
 	Set<Step> getStepsInEncompassingProject();
 
 	void reloadSteps();
+
+	void removeStepListener(StepListener listener);
 }
