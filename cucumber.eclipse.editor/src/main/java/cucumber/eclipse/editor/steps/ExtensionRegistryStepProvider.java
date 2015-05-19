@@ -12,21 +12,38 @@ import org.eclipse.core.runtime.Platform;
 
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.StepListener;
 
 public class ExtensionRegistryStepProvider implements IStepProvider {
 
 	final static String EXTENSION_POINT_STEPDEFINITIONS_ID = "cucumber.eclipse.steps.integration";
 
 	private Set<Step> steps = new HashSet<Step>();
+
+	private List<IStepDefinitions> stepDefinitions = getStepDefinitions();
+
+	private IFile file;
 	
 	public ExtensionRegistryStepProvider(IFile file) {
-		for (IStepDefinitions stepDef : getStepDefinitions()) {
-			steps.addAll(stepDef.getSteps(file));
+		this.file = file;
+		reloadSteps();
+	}
+
+	public void addStepListener(StepListener listener) {
+		for (IStepDefinitions stepDef : stepDefinitions) {
+			stepDef.addStepListener(listener);
 		}
 	}
-	
+
 	public Set<Step> getStepsInEncompassingProject() {
 		return steps;
+	}
+
+	public void reloadSteps() {
+		steps.clear();
+		for (IStepDefinitions stepDef : stepDefinitions) {
+			steps.addAll(stepDef.getSteps(file));
+		}
 	}
 
 	private static List<IStepDefinitions> getStepDefinitions() {
