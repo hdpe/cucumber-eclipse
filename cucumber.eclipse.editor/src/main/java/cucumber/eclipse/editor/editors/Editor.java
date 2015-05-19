@@ -18,6 +18,8 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IPartListener;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -96,6 +98,28 @@ public class Editor extends TextEditor {
 		if (service != null) {
 			service.activateContext("cucumber.eclipse.editor.featureEditorScope");
 		}
+		
+		getSite().getPage().addPartListener(new IPartListener() {
+			
+			public void partOpened(IWorkbenchPart part) {
+			}
+			
+			public void partDeactivated(IWorkbenchPart part) {
+			}
+			
+			public void partClosed(IWorkbenchPart part) {
+				if (model != null) {
+					model.destroy();
+					model = null;
+				}
+			}
+			
+			public void partBroughtToTop(IWorkbenchPart part) {
+			}
+			
+			public void partActivated(IWorkbenchPart part) {
+			}
+		});
 	}
 	
 	public void updateGherkinModel(GherkinModel model) {
@@ -150,6 +174,9 @@ public class Editor extends TextEditor {
 	protected void doSetInput(IEditorInput newInput) throws CoreException {
 		super.doSetInput(newInput);
 		input = (IFileEditorInput) newInput;
+		if (model != null) {
+			model.destroy();
+		}
 		model = new GherkinModel(new ExtensionRegistryStepProvider(input.getFile()),
 				new MarkerManager(), input.getFile());
 	}

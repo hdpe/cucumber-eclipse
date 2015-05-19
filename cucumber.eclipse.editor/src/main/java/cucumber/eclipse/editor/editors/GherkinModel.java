@@ -96,6 +96,10 @@ public class GherkinModel implements StepListener {
 			// TODO: log
 		}
 	}
+	
+	public void destroy() {
+		stepProvider.removeStepListener(this);
+	}
 
 	private void removeExistingMarkers() {
 		markerManager.removeAll(ERROR_ID, file);

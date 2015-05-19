@@ -143,6 +143,9 @@ public class GherkinModelTest {
 
             public void reloadSteps() {
             }
+
+            public void removeStepListener(StepListener listener) {
+            }
         };
     }
 
