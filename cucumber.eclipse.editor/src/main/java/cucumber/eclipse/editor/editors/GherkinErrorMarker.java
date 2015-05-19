@@ -67,11 +67,7 @@ public class GherkinErrorMarker implements Formatter {
 		handleStepContainer(arg0);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see gherkin.formatter.Formatter#close()
-	 */
+
 	@Override
 	public void close() {
 	}
@@ -155,7 +151,7 @@ public class GherkinErrorMarker implements Formatter {
 		
 		String stepString = stepLine.getKeyword() + stepLine.getName();
 		cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(
-				getDocumentLanguage(document), stepProvider.getStepsInEncompassingProject(file),
+				getDocumentLanguage(document), stepProvider.getStepsInEncompassingProject(),
 				stepString);
 		if (step == null) {
 			try {
