@@ -15,14 +15,18 @@ import org.eclipse.jface.text.Position;
 
 import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.steps.IStepProvider;
+import cucumber.eclipse.steps.integration.StepListener;
+import cucumber.eclipse.steps.integration.StepsChangedEvent;
 
-public class GherkinModel {
+public class GherkinModel implements StepListener {
 
 	private IStepProvider stepProvider;
 	
 	private IMarkerManager markerManager;
 	
 	private IFile file;
+	
+	private IDocument document;
 	
 	private String documentLanguage;
 	
@@ -37,6 +41,12 @@ public class GherkinModel {
 		this.stepProvider = stepProvider;
 		this.markerManager = markerManager;
 		this.file = file;
+		this.stepProvider.addStepListener(this);
+	}
+
+	public void onStepsChanged(StepsChangedEvent event) {
+		stepProvider.reloadSteps();
+		update();
 	}
 
 	public cucumber.eclipse.steps.integration.Step getStep(String selectedLine) {
@@ -64,6 +74,11 @@ public class GherkinModel {
 	}
 
 	public void updateFromDocument(final IDocument document) {
+		this.document = document;
+		update();
+	}
+
+	public void update() {
 		documentLanguage = getDocumentLanguage(document);
 		elements.clear();
 		removeExistingMarkers();
