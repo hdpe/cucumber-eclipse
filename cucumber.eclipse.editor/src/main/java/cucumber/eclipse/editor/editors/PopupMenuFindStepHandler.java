@@ -3,18 +3,13 @@ package cucumber.eclipse.editor.editors;
 import static cucumber.eclipse.editor.editors.DocumentUtil.getDocumentLanguage;
 
 import java.util.HashMap;
-import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -22,10 +17,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
 
-import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.steps.integration.Step;
 
 public class PopupMenuFindStepHandler extends AbstractHandler {
@@ -40,16 +32,8 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
 		if (!(input instanceof IFileEditorInput)) {
 			return null;
 		}
-		IFile featurefile = ((IFileEditorInput) input).getFile();
 
-		Set<Step> steps = new ExtensionRegistryStepProvider().getStepsInEncompassingProject(featurefile);
-		
-		ITextEditor editor = (ITextEditor) editorPart;
-		IDocumentProvider docProvider = editor.getDocumentProvider();
-		String selectedLine = getSelectedLine(editorPart);
-		String language = getDocumentLanguage(docProvider.getDocument(editorPart.getEditorInput()));
-
-		Step matchedStep = new StepMatcher().matchSteps(language, steps, selectedLine);
+		Step matchedStep = ((Editor) editorPart).getStep();
 		try {
 			if (matchedStep != null) openEditor(matchedStep);
 		} catch (CoreException e) {
@@ -69,22 +53,5 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
 		   IDE.openEditor(page, marker);
 		   marker.delete();
 		   
-	}
-	
-	private String getSelectedLine(IEditorPart editorPart) {
-		
-		ITextEditor editor = (ITextEditor) editorPart;
-				
-		TextSelection selecton = (TextSelection) editor.getSelectionProvider().getSelection();
-		int line = selecton.getStartLine();	
-		
-		IDocumentProvider docProvider = editor.getDocumentProvider();
-		IDocument doc = docProvider.getDocument(editorPart.getEditorInput());
-		try {
-			String stepLine = doc.get(doc.getLineOffset(line), doc.getLineLength(line)).trim();
-			return stepLine;
-		} catch (BadLocationException e) {
-			return "";
-		}
 	}
 }
