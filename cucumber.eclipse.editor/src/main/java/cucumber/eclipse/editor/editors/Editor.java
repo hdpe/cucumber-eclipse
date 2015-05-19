@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -18,10 +20,12 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.steps.integration.Step;
 
 public class Editor extends TextEditor {
 
@@ -113,6 +117,21 @@ public class Editor extends TextEditor {
 			outlinePage.update(featureElement);
 		}
 	}
+	
+	private String getSelectedLine() {
+		TextSelection selecton = (TextSelection) getSelectionProvider().getSelection();
+		int line = selecton.getStartLine();
+		
+		IDocumentProvider docProvider = getDocumentProvider();
+		IDocument doc = docProvider.getDocument(getEditorInput());
+		
+		return DocumentUtil.getLineText(doc, line);
+	}
+
+	public Step getStep() {
+		String selectedLine = getSelectedLine();
+		return model.getStep(selectedLine);
+	}
 
 	@Override
 	protected void initializeEditor() {
@@ -131,8 +150,8 @@ public class Editor extends TextEditor {
 	protected void doSetInput(IEditorInput newInput) throws CoreException {
 		super.doSetInput(newInput);
 		input = (IFileEditorInput) newInput;
-		model = new GherkinModel(new ExtensionRegistryStepProvider(), new MarkerManager(),
-				input.getFile());
+		model = new GherkinModel(new ExtensionRegistryStepProvider(input.getFile()),
+				new MarkerManager(), input.getFile());
 	}
 
 	public void dispose() {
