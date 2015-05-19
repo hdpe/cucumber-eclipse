@@ -1,5 +1,6 @@
 package cucumber.eclipse.editor.editors;
 
+import static cucumber.eclipse.editor.editors.DocumentUtil.getDocumentLanguage;
 import gherkin.lexer.LexingError;
 import gherkin.parser.ParseError;
 import gherkin.parser.Parser;
@@ -23,6 +24,8 @@ public class GherkinModel {
 	
 	private IFile file;
 	
+	private String documentLanguage;
+	
 	private List<PositionedElement> elements = new ArrayList<PositionedElement>();
 	
 	static final String ERROR_ID = "cucumber.eclipse.editor.editors.Editor.syntaxerror";
@@ -34,6 +37,11 @@ public class GherkinModel {
 		this.stepProvider = stepProvider;
 		this.markerManager = markerManager;
 		this.file = file;
+	}
+
+	public cucumber.eclipse.steps.integration.Step getStep(String selectedLine) {
+		return new StepMatcher().matchSteps(documentLanguage,
+				stepProvider.getStepsInEncompassingProject(file), selectedLine);
 	}
 
 	public PositionedElement getFeatureElement() {
@@ -56,6 +64,7 @@ public class GherkinModel {
 	}
 
 	public void updateFromDocument(final IDocument document) {
+		documentLanguage = getDocumentLanguage(document);
 		elements.clear();
 		removeExistingMarkers();
 		

@@ -6,6 +6,15 @@ import org.eclipse.jface.text.IRegion;
 
 public class DocumentUtil {
 
+	static final String getLineText(IDocument doc, int line) {
+		try {
+			String stepLine = doc.get(doc.getLineOffset(line), doc.getLineLength(line)).trim();
+			return stepLine;
+		} catch (BadLocationException e) {
+			return "";
+		}
+	}
+	
 	static String getDocumentLanguage(IDocument document) {
 		String lang = null;
 		try {
