@@ -46,6 +46,12 @@ public class ExtensionRegistryStepProvider implements IStepProvider {
 		}
 	}
 
+	public void removeStepListener(StepListener listener) {
+		for (IStepDefinitions stepDef : stepDefinitions) {
+			stepDef.removeStepListener(listener);
+		}
+	}
+
 	private static List<IStepDefinitions> getStepDefinitions() {
 		List<IStepDefinitions> stepDefs = new ArrayList<IStepDefinitions>();
 		IConfigurationElement[] config = Platform
