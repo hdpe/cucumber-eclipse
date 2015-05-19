@@ -25,7 +25,7 @@ public class ExtensionRegistryStepProvider implements IStepProvider {
 		}
 	}
 	
-	public Set<Step> getStepsInEncompassingProject(IFile featurefile) {
+	public Set<Step> getStepsInEncompassingProject() {
 		return steps;
 	}
 

@@ -41,7 +41,7 @@ public class GherkinModel {
 
 	public cucumber.eclipse.steps.integration.Step getStep(String selectedLine) {
 		return new StepMatcher().matchSteps(documentLanguage,
-				stepProvider.getStepsInEncompassingProject(file), selectedLine);
+				stepProvider.getStepsInEncompassingProject(), selectedLine);
 	}
 
 	public PositionedElement getFeatureElement() {

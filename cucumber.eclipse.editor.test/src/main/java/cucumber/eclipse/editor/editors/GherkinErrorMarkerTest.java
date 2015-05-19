@@ -51,7 +51,7 @@ public class GherkinErrorMarkerTest {
 
     private IStepProvider newStepProvider() {
         return new IStepProvider() {
-            public Set<Step> getStepsInEncompassingProject(IFile featurefile) {
+            public Set<Step> getStepsInEncompassingProject() {
                 return emptySet();
             }
         };
