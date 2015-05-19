@@ -1,31 +1,34 @@
 package cucumber.eclipse.editor.editors;
 
-import static java.util.Collections.emptySet;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import gherkin.parser.Parser;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.junit.Test;
 
 import cucumber.eclipse.editor.steps.IStepProvider;
-import cucumber.eclipse.editor.tests.TestFile;
-import cucumber.eclipse.editor.tests.TestMarker;
-import cucumber.eclipse.editor.tests.TestTextEditor;
 import cucumber.eclipse.steps.integration.Step;
+import gherkin.parser.Parser;
+
+import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class GherkinErrorMarkerTest {
 
     @Test
-    public void stepMarksOnlyUnmatchedStep() throws BadLocationException {
+    public void stepMarksOnlyUnmatchedStep() throws Exception {
         String source = "Feature: x\n"
                 + "\n"
                 + "  Scenario: x\n"
@@ -44,22 +47,37 @@ public class GherkinErrorMarkerTest {
     }
 
     private GherkinErrorMarker newErrorMarker(Document document,
-            final List<IMarker> createdMarkers) {
-        return new GherkinErrorMarker(new TestTextEditor(document), newStepProvider(),
-                new TestFile() {
-                    public IMarker createMarker(String type) throws CoreException {
-                        IMarker marker = new TestMarker(type, this);
-                        createdMarkers.add(marker);
-                        return marker;
-                    }
-                }, document);
-    }
+            final List<IMarker> createdMarkers) throws CoreException {
+    	
+    	IDocumentProvider documentProvider = createMock(IDocumentProvider.class);
+    	expect(documentProvider.getDocument(anyObject())).andStubReturn(document);
 
-    private IStepProvider newStepProvider() {
-        return new IStepProvider() {
-            public Set<Step> getStepsInEncompassingProject(IFile featurefile) {
-                return emptySet();
-            }
-        };
+    	ITextEditor editor = createNiceMock(ITextEditor.class);
+    	expect(editor.getDocumentProvider()).andStubReturn(documentProvider);
+    	
+    	IWorkspace workspace = createNiceMock(IWorkspace.class);
+    	    	
+    	final IFile inputFile = createMock(IFile.class);
+    	
+    	IStepProvider stepProvider = createMock(IStepProvider.class);
+    	expect(stepProvider.getStepsInEncompassingProject(inputFile)).andStubReturn(
+    		Collections.<Step>emptySet());
+    	
+    	
+//    	EasyMock.
+//
+//    	doAnswer(new Answer<IMarker>() {
+//
+//			@Override
+//			public IMarker answer(InvocationOnMock invocation) throws Throwable {
+//				IMarker marker = new TestMarker((String) invocation.getArguments()[0], inputFile);
+//                createdMarkers.add(marker);
+//                return marker;
+//			}
+//		}).when(inputFile.createMarker(anyString()));
+    	
+    	replay(editor, documentProvider, stepProvider, inputFile);
+    	
+    	return new GherkinErrorMarker(editor, stepProvider, inputFile, document);
     }
 }
