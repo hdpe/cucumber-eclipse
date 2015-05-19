@@ -150,13 +150,22 @@ public class Editor extends TextEditor {
 	protected void doSetInput(IEditorInput newInput) throws CoreException {
 		super.doSetInput(newInput);
 		input = (IFileEditorInput) newInput;
+		if (model != null) {
+			model.dispose();
+		}
 		model = new GherkinModel(new ExtensionRegistryStepProvider(input.getFile()),
 				new MarkerManager(), input.getFile());
 	}
 
 	public void dispose() {
 		super.dispose();
+		
 		colorManager.dispose();
+		
+		if (model != null) {
+			model.dispose();
+			model = null;
+		}
 	}
 
 	public Object getAdapter(Class required) {

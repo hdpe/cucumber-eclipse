@@ -58,6 +58,9 @@ public class GherkinErrorMarkerTest {
 
             public void reloadSteps() {
             }
+
+            public void removeStepListener(StepListener listener) {
+            }
         };
     }
 }
