@@ -17,11 +17,11 @@ import java.util.Stack;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.Position;
 
 import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.steps.IStepProvider;
@@ -149,18 +149,21 @@ public class GherkinErrorMarker implements Formatter {
 		stack.peek().addChild(element);
 		stack.peek().setEndLine(stepLine.getLineRange().getLast());
 		
-		String stepString = stepLine.getKeyword() + stepLine.getName();
-		cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(
-				getDocumentLanguage(document), stepProvider.getStepsInEncompassingProject(),
-				stepString);
-		if (step == null) {
-			try {
-				markUnmatchedStep(file, document, stepLine);
-			} catch (CoreException e) {
-				e.printStackTrace();
-			} catch (BadLocationException e) {
-				e.printStackTrace();
+		try {
+			if ("".equals(stepLine.getName())) {
+				markMissingStepName(file, document, element);
 			}
+			else {
+				String stepString = stepLine.getKeyword() + stepLine.getName();
+				cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(
+						getDocumentLanguage(document), stepProvider.getStepsInEncompassingProject(),
+						stepString);
+				if (step == null) {
+					markUnmatchedStep(file, document, stepLine);
+				}
+			}
+		} catch (BadLocationException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -226,10 +229,23 @@ public class GherkinErrorMarker implements Formatter {
 		}
 		return lastline;
 	}
+	
+	private void markMissingStepName(IFile featureFile, IDocument doc,
+			PositionedElement element) throws BadLocationException {
+		
+		Position stepPosition = element.toPosition();
+		
+		markerManager.add(ERROR_ID,
+				featureFile,
+				IMarker.SEVERITY_WARNING,
+				"No step name.",
+				element.getStatement().getLine(),
+				stepPosition.getOffset(),
+				stepPosition.getOffset() + stepPosition.getLength());
+	}
 
 	private void markUnmatchedStep(IFile featureFile, IDocument doc,
-			gherkin.formatter.model.Step stepLine) throws BadLocationException,
-			CoreException {
+			gherkin.formatter.model.Step stepLine) throws BadLocationException {
 		
 		FindReplaceDocumentAdapter find = new FindReplaceDocumentAdapter(doc);
 		IRegion region = find.find(doc.getLineOffset(stepLine.getLine() - 1),
