@@ -21,6 +21,31 @@ import cucumber.eclipse.steps.integration.Step;
 import cucumber.eclipse.steps.integration.StepListener;
 
 public class GherkinErrorMarkerTest {
+    
+    @Test
+    public void stepMarksMissingStepNameLine() throws BadLocationException {
+        String source = "Feature: x\n"
+                + "\n"
+                + "  Scenario: x\n"
+                + "    Given "; // keyword at line 3, position 4 - 9
+        Document document = new Document(source);
+        final AtomicInteger actualCharStart = new AtomicInteger();
+        final AtomicInteger actualCharEnd = new AtomicInteger();
+        
+        new Parser(new GherkinErrorMarker(newStepProvider(),
+                new IMarkerManager() {
+            public void removeAll(String type, IFile file) {
+            }
+            
+            public void add(String type, IFile file, int severity, String message, int lineNumber, int charStart, int charEnd) {
+                actualCharStart.set(charStart);
+                actualCharEnd.set(charEnd);
+            }
+        }, new TestFile(), document)).parse(source, "", 0);
+        
+        assertThat("charStart", actualCharStart.get(), is(document.getLineOffset(3)));
+        assertThat("charEnd", actualCharEnd.get(), is(document.getLineOffset(3) + 10));
+    }
 
     @Test
     public void stepMarksOnlyUnmatchedStep() throws BadLocationException {
