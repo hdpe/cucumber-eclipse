@@ -1,5 +1,8 @@
 package cucumber.eclipse.editor.editors;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.steps.integration.Step;
 
 public class Editor extends TextEditor {
@@ -70,6 +74,7 @@ public class Editor extends TextEditor {
 	private ProjectionAnnotationModel annotationModel;
 	private Annotation[] oldAnnotations;
 	private GherkinOutlinePage outlinePage;
+	private IStepProvider stepProvider;
 	
 	/*
 	 * (non-Javadoc)
@@ -122,6 +127,10 @@ public class Editor extends TextEditor {
 		});
 	}
 	
+	TextSelection getSelection() {
+		return (TextSelection) getSelectionProvider().getSelection();
+	}
+	
 	public void updateGherkinModel(GherkinModel model) {
 		updateOutline(model.getFeatureElement());
 		updateFoldingStructure(model.getFoldRanges());
@@ -143,8 +152,7 @@ public class Editor extends TextEditor {
 	}
 	
 	private String getSelectedLine() {
-		TextSelection selecton = (TextSelection) getSelectionProvider().getSelection();
-		int line = selecton.getStartLine();
+		int line = getSelection().getStartLine();
 		
 		IDocumentProvider docProvider = getDocumentProvider();
 		IDocument doc = docProvider.getDocument(getEditorInput());
@@ -155,6 +163,16 @@ public class Editor extends TextEditor {
 	public Step getStep() {
 		String selectedLine = getSelectedLine();
 		return model.getStep(selectedLine);
+	}
+
+	public List<Step> getAvailableSteps() {
+		List<Step> steps = new ArrayList<Step>(stepProvider.getStepsInEncompassingProject());
+		Collections.sort(steps, new Comparator<Step>() {
+			public int compare(Step o1, Step o2) {
+				return o1.getText().compareTo(o2.getText());
+			}
+		});
+		return steps;
 	}
 
 	@Override
@@ -177,8 +195,8 @@ public class Editor extends TextEditor {
 		if (model != null) {
 			model.destroy();
 		}
-		model = new GherkinModel(new ExtensionRegistryStepProvider(input.getFile()),
-				new MarkerManager(), input.getFile());
+		stepProvider = new ExtensionRegistryStepProvider(input.getFile());
+		model = new GherkinModel(stepProvider, new MarkerManager(), input.getFile());
 	}
 
 	public void dispose() {
