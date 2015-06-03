@@ -1,4 +1,4 @@
-package cucumber.eclipse.editor.editors;
+package cucumber.eclipse.editor.steps;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 
-import cucumber.eclipse.editor.steps.StepCompletionTemplate;
+import cucumber.eclipse.editor.editors.Editor;
 
 import cucumber.eclipse.steps.integration.Step;
 
