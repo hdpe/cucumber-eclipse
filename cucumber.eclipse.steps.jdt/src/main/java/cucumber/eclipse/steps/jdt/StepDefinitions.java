@@ -1,7 +1,7 @@
 package cucumber.eclipse.steps.jdt;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -127,6 +127,7 @@ public class StepDefinitions implements IStepDefinitions {
 						step.setText(getAnnotationText(annotation));
 						step.setLineNumber(getLineNumber(compUnit, annotation));
 						step.setLang(cukeAnnotation.getLang());
+						step.setParameterNames(Arrays.asList(method.getParameterNames()));
 						steps.add(step);
 
 					}
