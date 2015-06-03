@@ -11,7 +11,7 @@ import org.eclipse.jface.text.templates.TemplateVariable;
 
 import cucumber.eclipse.steps.integration.Step;
 
-public class StepCompletionTemplate extends Template {
+class StepCompletionTemplate extends Template {
 
 	private static final String GROUP_CONTENT
 		= "(?:"
@@ -71,12 +71,12 @@ public class StepCompletionTemplate extends Template {
 	
 	private final Step step;
 
-	public StepCompletionTemplate(Step step, String contextTypeId) {
+	StepCompletionTemplate(Step step, String contextTypeId) {
 		super(step.getText(), "", contextTypeId, step.getText(), false);
 		this.step = step;
 	}
 	
-	public TemplateBuffer toBuffer() {
+	TemplateBuffer toBuffer() {
 		int argumentIdx = 0;
 		StringBuffer sb = new StringBuffer();
 		List<TemplateVariable> variables = new ArrayList<TemplateVariable>();

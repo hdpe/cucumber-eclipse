@@ -15,6 +15,8 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
+import cucumber.eclipse.editor.steps.StepCompletionProcessor;
+
 public class GherkinConfiguration extends TextSourceViewerConfiguration {
 
 	private GherkinKeywordScanner keywordScanner;
