@@ -1,5 +1,7 @@
 package cucumber.eclipse.steps.integration;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IResource;
@@ -11,6 +13,7 @@ public class Step {
 	private int lineNumber;
 	private String lang;
 	private Pattern compiledText;
+	private List<String> parameterNames = new ArrayList<String>();
 	
 	public String getText() {
 		return text;
@@ -41,6 +44,12 @@ public class Step {
 	}
 	public void setLang(String lang) {
 		this.lang = lang;
+	}
+	public List<String> getParameterNames() {
+		return parameterNames;
+	}
+	public void setParameterNames(List<String> parameterNames) {
+		this.parameterNames = parameterNames;
 	}
 	@Override
 	public String toString() {
