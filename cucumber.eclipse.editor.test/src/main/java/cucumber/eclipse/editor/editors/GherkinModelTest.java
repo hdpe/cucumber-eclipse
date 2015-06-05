@@ -1,17 +1,22 @@
 package cucumber.eclipse.editor.editors;
 
 import static java.util.Collections.emptySet;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.Position;
+import org.eclipse.text.edits.TextEdit;
 import org.junit.Test;
 
+import gherkin.formatter.model.BasicStatement;
 import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.editor.tests.TestFile;
@@ -132,12 +137,35 @@ public class GherkinModelTest {
                 feature.getChildren().get(2).getChildren().get(0).isStep(), is(true));
     }
     
+    @Test
+    public void getStepElementReturnsElement() throws BadLocationException {
+    	String source = "Feature: x\n"
+	            + "\n"
+	            + "  Scenario: 1\n"
+	            + "    Given y\n" // line 3
+	            + "    And z\n";
+	    Document document = new Document(source);
+	    GherkinModel model = new GherkinModel(newStepProvider(), newMarkerManager(), new TestFile());
+	    model.updateFromDocument(document);
+	    
+	    int stepOffset = source.indexOf("Given");
+		BasicStatement statement = model.getStepElement(stepOffset).getStatement();
+	    
+		assertThat(statement.getName(), is("y"));
+    }
+    
     private IStepProvider newStepProvider() {
         return new IStepProvider() {
             public void addStepListener(StepListener listener) {
             }
 
-            public Set<Step> getStepsInEncompassingProject() {
+            @Override
+			public TextEdit createStepSnippet(IFile stepFile, gherkin.formatter.model.Step step) throws IOException,
+				CoreException {
+				return null;
+			}
+
+			public Set<Step> getStepsInEncompassingProject() {
                 return emptySet();
             }
 

@@ -1,5 +1,6 @@
 package cucumber.eclipse.editor.steps;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +10,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.text.edits.TextEdit;
 
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.Step;
@@ -33,6 +35,18 @@ public class ExtensionRegistryStepProvider implements IStepProvider {
 		for (IStepDefinitions stepDef : stepDefinitions) {
 			stepDef.addStepListener(listener);
 		}
+	}
+
+	@Override
+	public TextEdit createStepSnippet(IFile stepFile, gherkin.formatter.model.Step step)
+			throws IOException, CoreException {
+		for (IStepDefinitions stepDef : stepDefinitions) {
+			if (stepDef.getStepGenerator().supports(stepFile)) {
+				return stepDef.getStepGenerator().createStepSnippet(stepFile, step);
+			}
+		}
+		
+		return null;
 	}
 
 	public Set<Step> getStepsInEncompassingProject() {

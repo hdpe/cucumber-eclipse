@@ -10,21 +10,14 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IImportDeclaration;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMemberValuePair;
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
@@ -37,31 +30,47 @@ import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
-import org.eclipse.jdt.internal.ui.actions.JDTQuickMenuCreator;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 
 import cucumber.eclipse.steps.integration.IStepDefinitions;
+import cucumber.eclipse.steps.integration.IStepGenerator;
 import cucumber.eclipse.steps.integration.Step;
 import cucumber.eclipse.steps.integration.StepListener;
 import cucumber.eclipse.steps.integration.StepsChangedEvent;
 
-public class StepDefinitions implements IStepDefinitions {
+public final class StepDefinitions implements IStepDefinitions {
 
-    public static StepDefinitions INSTANCE;
+    private static volatile StepDefinitions INSTANCE;
     
-    public StepDefinitions() {
-        INSTANCE = this;
+    private StepDefinitions() {
     }
     
-    private List<StepListener> listeners = new ArrayList<StepListener>();
+    private final List<StepListener> listeners = new ArrayList<StepListener>();
     
-	private Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
+	private final Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
+
+	public static StepDefinitions getInstance() {
+		if (INSTANCE == null) {
+			synchronized (StepDefinitions.class) {
+				if (INSTANCE == null) {
+					INSTANCE = new StepDefinitions();
+				}
+			}
+		}
+		
+		return INSTANCE;
+	}
 	
 	public void addStepListener(StepListener listener) {
 	    this.listeners.add(listener);
 	}
-	
+
+	@Override
+	public IStepGenerator getStepGenerator() {
+		return new StepGenerator();
+	}
+
 	@Override
 	public Set<Step> getSteps(IFile featurefile) {
 		Set<Step> steps = new HashSet<Step>();
