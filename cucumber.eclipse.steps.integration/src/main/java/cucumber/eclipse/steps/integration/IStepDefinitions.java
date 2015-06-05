@@ -8,6 +8,8 @@ public interface IStepDefinitions {
 
     void addStepListener(StepListener listener);
 
+    IStepGenerator getStepGenerator();
+    
     Set<Step> getSteps(IFile featurefile);
 
     void removeStepListener(StepListener listener);
