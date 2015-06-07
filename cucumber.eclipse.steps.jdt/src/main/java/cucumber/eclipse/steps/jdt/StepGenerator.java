@@ -1,8 +1,8 @@
 package cucumber.eclipse.steps.jdt;
 
-import java.io.ByteArrayOutputStream;
+import gherkin.formatter.model.Step;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -14,7 +14,6 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.TextEdit;
 
@@ -25,7 +24,6 @@ import cucumber.runtime.java.JavaBackend;
 import cucumber.runtime.java.ObjectFactory;
 import cucumber.runtime.snippets.CamelCaseConcatenator;
 import cucumber.runtime.snippets.FunctionNameGenerator;
-import gherkin.formatter.model.Step;
 
 public class StepGenerator implements IStepGenerator {
 
@@ -64,15 +62,13 @@ public class StepGenerator implements IStepGenerator {
 	}
 
 	@Override
-	public TextEdit createStepSnippet(IFile stepFile, Step step) throws IOException, CoreException {
+	public TextEdit createStepSnippet(Step step, IDocument targetDocument) throws IOException, CoreException {
 		Backend backend = new JavaBackend(new EmptyObjectFactory(), new EmptyClassFinder());
 		
 		String snippetText = backend.getSnippet(step, new FunctionNameGenerator(new CamelCaseConcatenator()));
 
-		IDocument document = read(stepFile.getContents(), stepFile.getCharset());
-		
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
-		parser.setSource(document.get().toCharArray());
+		parser.setSource(targetDocument.get().toCharArray());
 		
 		CompilationUnit target = (CompilationUnit) parser.createAST(null);
 		target.recordModifications();
@@ -92,22 +88,7 @@ public class StepGenerator implements IStepGenerator {
 			targetType.bodyDeclarations().add(getInsertionPoint(targetType, fragmentNode), fragmentNode);
 		}
 		
-		return target.rewrite(document, null);
-	}
-	
-	private static IDocument read(InputStream in, String encoding) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		
-		int n;
-		byte[] b = new byte[16384];
-		
-		while ((n = in.read(b, 0, b.length)) != -1) {
-			out.write(b, 0, n);
-		}
-		
-		out.flush();
-		
-		return new Document(new String(out.toByteArray(), encoding));
+		return target.rewrite(targetDocument, null);
 	}
 	
 	private static int getInsertionPoint(TypeDeclaration source, BodyDeclaration fragment) {
