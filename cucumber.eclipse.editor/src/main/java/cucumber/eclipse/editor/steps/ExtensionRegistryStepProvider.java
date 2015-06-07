@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.TextEdit;
 
 import cucumber.eclipse.steps.integration.IStepDefinitions;
@@ -38,11 +39,11 @@ public class ExtensionRegistryStepProvider implements IStepProvider {
 	}
 
 	@Override
-	public TextEdit createStepSnippet(IFile stepFile, gherkin.formatter.model.Step step)
-			throws IOException, CoreException {
+	public TextEdit createStepSnippet(gherkin.formatter.model.Step step, IFile targetFile,
+			IDocument targetDocument) throws IOException, CoreException {
 		for (IStepDefinitions stepDef : stepDefinitions) {
-			if (stepDef.getStepGenerator().supports(stepFile)) {
-				return stepDef.getStepGenerator().createStepSnippet(stepFile, step);
+			if (stepDef.getStepGenerator().supports(targetFile)) {
+				return stepDef.getStepGenerator().createStepSnippet(step, targetDocument);
 			}
 		}
 		
