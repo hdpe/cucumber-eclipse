@@ -2,10 +2,8 @@ package cucumber.eclipse.editor.editors;
 
 
 import static java.util.Collections.emptySet;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-
 import gherkin.parser.Parser;
 
 import java.io.IOException;
@@ -16,6 +14,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.TextEdit;
 import org.junit.Test;
 
@@ -86,8 +85,8 @@ public class GherkinErrorMarkerTest {
             }
 
             @Override
-			public TextEdit createStepSnippet(IFile stepFile, gherkin.formatter.model.Step step) throws IOException,
-				CoreException {
+			public TextEdit createStepSnippet(gherkin.formatter.model.Step step, IFile targetFile,
+			        IDocument targetDocument) throws IOException, CoreException {
 				return null;
 			}
 
