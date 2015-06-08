@@ -1,5 +1,7 @@
 package cucumber.eclipse.editor.markers;
 
+import static cucumber.eclipse.editor.editors.DocumentUtil.read;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,18 +16,22 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 
 import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.editors.Editor;
 import cucumber.eclipse.editor.editors.GherkinModel;
 import cucumber.eclipse.editor.editors.PositionedElement;
 import cucumber.eclipse.editor.snippet.SnippetGenerator;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.steps.integration.Step;
-
-import static cucumber.eclipse.editor.editors.DocumentUtil.read;
 
 public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionGenerator {
 
@@ -43,8 +49,7 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 			IStepProvider stepProvider = new ExtensionRegistryStepProvider(featureFile);
 		
 			try {
-				GherkinModel model = new GherkinModel(stepProvider, new DummyMarkerManager(), featureFile);
-				model.updateFromDocument(read(featureFile.getContents(), featureFile.getCharset()));
+				GherkinModel model = getCurrentModel(featureFile);
 				PositionedElement element = model.getStepElement(marker.getAttribute(IMarker.CHAR_START, 0));
 				
 				gherkin.formatter.model.Step step = ((gherkin.formatter.model.Step) element.getStatement());
@@ -95,6 +100,47 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 		}
 		
 		return resolutions;
+	}
+	
+	private static GherkinModel getCurrentModel(IFile featureFile) throws IOException, CoreException {
+		GherkinModel model = getModelFromOpenEditor(featureFile);
+		
+		if (model == null) {
+			model = getModelFromFile(featureFile);
+		}
+		
+		return model;
+	}
+
+	private static GherkinModel getModelFromOpenEditor(IFile featureFile) throws PartInitException {
+		IEditorReference[] editorReferences = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+		
+		for (IEditorReference editorReference : editorReferences) {
+			if (editorReference.getEditorInput() instanceof FileEditorInput) {
+				FileEditorInput fileEditorInput = (FileEditorInput) editorReference.getEditorInput();
+				
+				if (featureFile.equals(fileEditorInput.getFile())) {
+					IEditorPart editor = editorReference.getEditor(false);
+
+					if (editor instanceof Editor) {
+						return ((Editor) editor).getModel();
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+
+	private static GherkinModel getModelFromFile(IFile featureFile) throws IOException, CoreException {
+		// TODO: there's a memory leak here - each new GherkinModel will register itself
+		// as a listener to any IStepDefinitions defined in the integration bundles, and this
+		// will not currently get unregistered.
+		IStepProvider stepProvider = new ExtensionRegistryStepProvider(featureFile);
+		GherkinModel model = new GherkinModel(stepProvider, new DummyMarkerManager(), featureFile);
+		model.updateFromDocument(read(featureFile.getContents(), featureFile.getCharset()));
+		return model;
 	}
 
 	private static void logException(IMarker marker, Exception exception) {
