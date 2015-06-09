@@ -72,7 +72,7 @@ class StepCompletionTemplate extends Template {
 	private final Step step;
 
 	StepCompletionTemplate(Step step, String contextTypeId) {
-		super(step.getText(), "", contextTypeId, step.getText(), false);
+		super(step.getText(), "", contextTypeId, step.getText().replace("$", "$$"), false);
 		this.step = step;
 	}
 	
