@@ -13,6 +13,13 @@ import static org.junit.Assert.assertThat;
 public class StepCompletionTemplateTest {
 
     @Test
+    public void constructorEscapesDollarInPattern() {
+        StepCompletionTemplate template = new StepCompletionTemplate(createStep("^x$"), "");
+        
+        assertThat(template.getPattern(), is("^x$$"));
+    }
+    
+    @Test
     public void toBufferWithTextCreatesNoVariables() {
         StepCompletionTemplate template = new StepCompletionTemplate(createStep("x"), "");
         
