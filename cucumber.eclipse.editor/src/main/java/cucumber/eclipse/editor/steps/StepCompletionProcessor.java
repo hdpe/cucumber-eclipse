@@ -3,6 +3,7 @@ package cucumber.eclipse.editor.steps;
 import java.util.List;
 
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -18,7 +19,6 @@ import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 
 import cucumber.eclipse.editor.editors.Editor;
-
 import cucumber.eclipse.steps.integration.Step;
 
 public class StepCompletionProcessor extends TemplateCompletionProcessor {
@@ -52,6 +52,12 @@ public class StepCompletionProcessor extends TemplateCompletionProcessor {
 		public String getDisplayString() {
 			return getTemplate().getName();
 		}
+
+		@Override
+		public boolean validate(IDocument document, int offset, DocumentEvent event) {
+			Step step = ((StepCompletionTemplate) getTemplate()).getStep();
+			return StepCompletionUtil.isStepValidForPosition(step, document, offset);
+		}
 	}
 	
 	private static final TemplateContextType CONTEXT_TYPE = new TemplateContextType(
@@ -80,6 +86,10 @@ public class StepCompletionProcessor extends TemplateCompletionProcessor {
 		return new StepCompletionProposal(template, context, region, getImage(template), relevance);
 	}
 	
+	protected String extractPrefix(ITextViewer viewer, int offset) {
+		return StepCompletionUtil.getStepPrefix(viewer.getDocument(), offset);
+	}
+
 	@Override
 	protected Template[] getTemplates(String contextTypeId) {
 		List<Step> availableSteps = editor.getAvailableSteps();

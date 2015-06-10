@@ -20,6 +20,41 @@ public class StepCompletionTemplateTest {
     }
     
     @Test
+    public void matchesWithNoPrefixIsTrue() {
+        StepCompletionTemplate template = new StepCompletionTemplate(createStep("^x$"), "");
+        
+        assertThat(template.matches("", null), is(true));
+    }
+
+    @Test
+    public void matchesWithFullMatchIsTrue() {
+        StepCompletionTemplate template = new StepCompletionTemplate(createStep("^x$"), "");
+        
+        assertThat(template.matches("x", null), is(true));
+    }
+
+    @Test
+    public void matchesWithPrefixMatchIsTrue() {
+        StepCompletionTemplate template = new StepCompletionTemplate(createStep("^xy$"), "");
+        
+        assertThat(template.matches("x", null), is(true));
+    }
+
+    @Test
+    public void matchesWithNonPrefixMatchIsFalse() {
+        StepCompletionTemplate template = new StepCompletionTemplate(createStep("^xy$"), "");
+        
+        assertThat(template.matches("y", null), is(false));
+    }
+
+    @Test
+    public void matchesWithNoMatchIsFalse() {
+        StepCompletionTemplate template = new StepCompletionTemplate(createStep("^x$"), "");
+        
+        assertThat(template.matches("y", null), is(false));
+    }
+
+    @Test
     public void toBufferWithTextCreatesNoVariables() {
         StepCompletionTemplate template = new StepCompletionTemplate(createStep("x"), "");
         
