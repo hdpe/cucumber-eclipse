@@ -75,7 +75,16 @@ class StepCompletionTemplate extends Template {
 		super(step.getText(), "", contextTypeId, step.getText().replace("$", "$$"), false);
 		this.step = step;
 	}
-	
+
+	Step getStep() {
+		return step;
+	}
+
+	@Override
+	public boolean matches(String prefix, String contextTypeId) {
+		return StepCompletionUtil.isStepValidForPrefix(step, prefix);
+	}
+
 	TemplateBuffer toBuffer() {
 		int argumentIdx = 0;
 		StringBuffer sb = new StringBuffer();
