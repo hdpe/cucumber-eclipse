@@ -11,14 +11,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class StepCompletionTemplateTest {
-
+    
     @Test
     public void constructorEscapesDollarInPattern() {
-        StepCompletionTemplate template = new StepCompletionTemplate(createStep("^x$"), "");
+        StepCompletionTemplate template = new StepCompletionTemplate(createStep("$"), "");
         
-        assertThat(template.getPattern(), is("^x$$"));
+        assertThat(template.getPattern(), is("$$"));
     }
-    
+
     @Test
     public void matchesWithNoPrefixIsTrue() {
         StepCompletionTemplate template = new StepCompletionTemplate(createStep("^x$"), "");
@@ -52,6 +52,27 @@ public class StepCompletionTemplateTest {
         StepCompletionTemplate template = new StepCompletionTemplate(createStep("^x$"), "");
         
         assertThat(template.matches("y", null), is(false));
+    }
+    
+    @Test
+    public void toBufferStripsOpeningHat() {
+        StepCompletionTemplate template = new StepCompletionTemplate(createStep("^x"), "");
+        
+        assertThat(template.toBuffer().getString(), is("x"));
+    }
+    
+    @Test
+    public void toBufferStripsClosingDollar() {
+        StepCompletionTemplate template = new StepCompletionTemplate(createStep("x$"), "");
+        
+        assertThat(template.toBuffer().getString(), is("x"));
+    }
+    
+    @Test
+    public void toBufferRetainsEscapedClosingDollar() {
+        StepCompletionTemplate template = new StepCompletionTemplate(createStep("\\$"), "");
+        
+        assertThat(template.toBuffer().getString(), is("\\$"));
     }
 
     @Test

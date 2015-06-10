@@ -90,7 +90,7 @@ class StepCompletionTemplate extends Template {
 		StringBuffer sb = new StringBuffer();
 		List<TemplateVariable> variables = new ArrayList<TemplateVariable>();
 		
-		Matcher matcher = INDEFINITE_REGION_PATTERN.matcher(step.getText());
+		Matcher matcher = INDEFINITE_REGION_PATTERN.matcher(stripLineBoundaries(step.getText()));
 		
 		while (matcher.find()) {
 			String replacement;
@@ -131,5 +131,10 @@ class StepCompletionTemplate extends Template {
 		
 		return new TemplateBuffer(sb.toString(), variables.toArray(
 				new TemplateVariable[variables.size()]));
+	}
+
+	private static String stripLineBoundaries(String regex) {
+		return regex.replaceAll("\\^", "") // ^ at start
+				.replaceAll("([^\\\\])\\$$", "$1"); // $ at end
 	}
 }
