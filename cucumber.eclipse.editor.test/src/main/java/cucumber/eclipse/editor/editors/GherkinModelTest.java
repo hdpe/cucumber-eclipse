@@ -154,6 +154,22 @@ public class GherkinModelTest {
 		assertThat(statement.getName(), is("y"));
     }
     
+    @Test
+    public void isScenarioOrScenarioOutlineInScenarioStepIsTrue() throws BadLocationException {
+    	String source = "Feature: x\n"
+	            + "\n"
+	            + "  Scenario: 1\n"
+	            + "    Given y\n"; // line 3
+	    Document document = new Document(source);        
+	    GherkinModel model = new GherkinModel(newStepProvider(), newMarkerManager(), new TestFile());
+	    model.updateFromDocument(document);
+	    
+	    int stepOffset = source.indexOf("Given");
+	    boolean actual = model.getScenarioOrScenarioOutline(document.getLineOffset(3) + stepOffset);
+	    
+	    assertThat(actual, is(true));
+    }
+    
     private IStepProvider newStepProvider() {
         return new IStepProvider() {
             public void addStepListener(StepListener listener) {

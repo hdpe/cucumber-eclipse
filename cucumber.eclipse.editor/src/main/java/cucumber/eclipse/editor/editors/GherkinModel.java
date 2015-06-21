@@ -1,6 +1,7 @@
 package cucumber.eclipse.editor.editors;
 
 import static cucumber.eclipse.editor.editors.DocumentUtil.getDocumentLanguage;
+import gherkin.formatter.model.BasicStatement;
 import gherkin.lexer.LexingError;
 import gherkin.parser.ParseError;
 import gherkin.parser.Parser;
@@ -74,12 +75,23 @@ public class GherkinModel implements StepListener {
 	}
 	
 	public PositionedElement getStepElement(int offset) throws BadLocationException {
-		for (PositionedElement element : elements) {
-			if (element.isStep() && element.toPosition().includes(offset)) {
-				return element;
-			}
+		PositionedElement element = getMostSpecificElement(offset);
+		return element != null && element.isStep() ? element : null;
+	}
+	
+	public BasicStatement getScenarioOrScenarioOutline(int offset) throws BadLocationException {
+		PositionedElement element = getMostSpecificElement(offset);
+		if (element == null) {
+			return null;
 		}
-		
+		BasicStatement scenario = element.getContainingScenario();
+		if (scenario != null) {
+			return scenario;
+		}
+		BasicStatement scenarioOutline = element.getContainingScenarioOutline();
+		if (scenarioOutline != null) {
+			return scenarioOutline;
+		}
 		return null;
 	}
 
@@ -109,6 +121,20 @@ public class GherkinModel implements StepListener {
 	
 	public void dispose() {
 		stepProvider.removeStepListener(this);
+	}
+	
+	private PositionedElement getMostSpecificElement(int offset) throws BadLocationException {
+		PositionedElement featureElement = getFeatureElement();
+		return featureElement == null ? null : getMostSpecificElement(offset, featureElement);
+	}
+	
+	private PositionedElement getMostSpecificElement(int offset, PositionedElement searchFrom) throws BadLocationException {
+		for (PositionedElement element : searchFrom.getChildren()) {
+			if (element.toPosition().includes(offset)) {
+				return getMostSpecificElement(offset, element);
+			}
+		}
+		return searchFrom;
 	}
 
 	private void removeExistingMarkers() {
