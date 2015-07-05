@@ -96,6 +96,11 @@ public class Editor extends TextEditor {
 	private GherkinModel model;
 	private ColorManager colorManager;
 	private IFileEditorInput input;
+	private ProjectionSupport projectionSupport;
+	private ProjectionAnnotationModel annotationModel;
+	private Annotation[] oldAnnotations;
+	private GherkinOutlinePage outlinePage;
+	private IStepProvider stepProvider;
 
 	public Editor() {
 		super();
@@ -128,12 +133,6 @@ public class Editor extends TextEditor {
 		return viewer;
 	}
 
-	private ProjectionSupport projectionSupport;
-	private ProjectionAnnotationModel annotationModel;
-	private Annotation[] oldAnnotations;
-	private GherkinOutlinePage outlinePage;
-	private IStepProvider stepProvider;
-	
 	/*
 	 * (non-Javadoc)
 	 * 
