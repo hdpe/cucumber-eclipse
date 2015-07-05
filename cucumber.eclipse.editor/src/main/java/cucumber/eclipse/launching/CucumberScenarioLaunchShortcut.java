@@ -13,14 +13,14 @@ public class CucumberScenarioLaunchShortcut extends CucumberFeatureLaunchShortcu
   	
 	@Override
 	protected String getName(ILaunchConfigurationType type) {
-		return CucumberFeaureLaunchUtils.getScenarioName();
+		return CucumberFeatureLaunchUtils.getScenarioName();
 	}
 
 	@Override
 	protected void initializeConfiguration(ILaunchConfigurationWorkingCopy config) {
 		super.initializeConfiguration(config);
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_LINE_NUMBER,
-				CucumberFeaureLaunchUtils.getScenarioLineNumber());
+				CucumberFeatureLaunchUtils.getScenarioLineNumber());
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class CucumberScenarioLaunchShortcut extends CucumberFeatureLaunchShortcu
 	private boolean isGoodLineNumber(ILaunchConfiguration configuration) {
 		try {
 			return configuration.getAttribute(CucumberFeatureLaunchConstants.ATTR_LINE_NUMBER, 0)
-					== CucumberFeaureLaunchUtils.getScenarioLineNumber();
+					== CucumberFeatureLaunchUtils.getScenarioLineNumber();
 		}
 		catch (CoreException exception) {
 			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
