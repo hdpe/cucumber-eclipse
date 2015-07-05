@@ -17,9 +17,9 @@ import org.eclipse.ui.PlatformUI;
 
 import cucumber.eclipse.editor.editors.Editor;
 
-public class CucumberFeaureLaunchUtils {
+public class CucumberFeatureLaunchUtils {
 
-	private CucumberFeaureLaunchUtils() {
+	private CucumberFeatureLaunchUtils() {
 		// NO ENTRY NO INSTANCES
 	}
 
