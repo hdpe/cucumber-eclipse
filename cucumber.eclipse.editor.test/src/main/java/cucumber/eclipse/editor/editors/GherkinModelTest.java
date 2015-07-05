@@ -14,9 +14,11 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.text.edits.TextEdit;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import gherkin.formatter.model.BasicStatement;
+import gherkin.formatter.model.Scenario;
 import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.editor.tests.TestFile;
@@ -152,6 +154,42 @@ public class GherkinModelTest {
 		BasicStatement statement = model.getStepElement(stepOffset).getStatement();
 	    
 		assertThat(statement.getName(), is("y"));
+    }
+    
+    @Test
+    public void getScenarioOrScenarioOutlineInScenarioReturnsScenario() throws BadLocationException {
+    	String source = "Feature: x\n"
+    			+ "\n"
+    			+ "  Scenario: 1\n"
+    			+ "    Given y\n"
+    			+ "\n"
+    			+ "  Scenario: 2\n"
+    			+ "    Given z\n";
+    	Document document = new Document(source);        
+    	GherkinModel model = new GherkinModel(newStepProvider(), newMarkerManager(), new TestFile());
+    	model.updateFromDocument(document);
+    	
+    	BasicStatement actual = model.getScenarioOrScenarioOutline(source.indexOf("Scenario: 1"));
+    	
+    	assertThat(((Scenario) actual).getName(), is("1"));
+    }
+    
+    @Test
+    public void getScenarioOrScenarioOutlineInScenarioStepReturnsScenario() throws BadLocationException {
+    	String source = "Feature: x\n"
+    			+ "\n"
+    			+ "  Scenario: 1\n"
+    			+ "    Given y\n"
+    			+ "\n"
+    			+ "  Scenario: 2\n"
+    			+ "    Given z\n";
+	    Document document = new Document(source);        
+	    GherkinModel model = new GherkinModel(newStepProvider(), newMarkerManager(), new TestFile());
+	    model.updateFromDocument(document);
+	    
+	    BasicStatement actual = model.getScenarioOrScenarioOutline(source.indexOf("Given y"));
+	    
+	    assertThat(((Scenario) actual).getName(), is("1"));
     }
     
     private IStepProvider newStepProvider() {

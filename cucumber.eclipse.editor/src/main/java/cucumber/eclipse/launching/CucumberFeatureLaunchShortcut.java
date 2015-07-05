@@ -92,7 +92,11 @@ public class CucumberFeatureLaunchShortcut extends AbstractLaunchShortcut implem
 	}
 
 	private boolean isGoodName(ILaunchConfiguration configuration) {
-		return configuration.getName().equals(newLaunchConfigurationName);
+		try {
+			return configuration.getName().equals(getName(configuration.getType()));
+		} catch (CoreException e) {
+			return false;
+		}
 	}
 
 	private boolean isGoodType(ILaunchConfiguration configuration) {
