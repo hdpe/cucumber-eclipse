@@ -47,7 +47,9 @@ public class GherkinModel implements StepListener {
 
 	public void onStepsChanged(StepsChangedEvent event) {
 		stepProvider.reloadSteps();
-		update();
+		if (document != null) {
+			update();
+		}
 	}
 
 	public cucumber.eclipse.steps.integration.Step getStep(String selectedLine) {
