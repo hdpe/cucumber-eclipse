@@ -32,6 +32,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 
 		String[] bootpath = getBootpath(config);
 		runConfig.setBootClassPath(bootpath);
+		runConfig.setEnvironment(getEnvironment(config));
 		runConfig.setVMArguments(DebugPlugin.parseArguments(getVMArguments(config)));
 		runConfig.setWorkingDirectory(getWorkingDirectory(config).getAbsolutePath());
 		
@@ -125,7 +126,11 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		args.addAll(Arrays.asList(DebugPlugin.parseArguments(getProgramArguments(config))));
 
 		runConfig.setProgramArguments(args.toArray(new String[0]));
-
+		
+		runConfig.setBootClassPath(getBootpath(config));
+		
+		setDefaultSourceLocator(launch, config);
+		
 		runner.run(runConfig, launch, monitor);
 
 	}
