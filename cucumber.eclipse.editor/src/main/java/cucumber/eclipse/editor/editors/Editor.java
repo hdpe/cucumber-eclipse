@@ -23,9 +23,14 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.custom.CaretEvent;
+import org.eclipse.swt.custom.CaretListener;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -107,10 +112,14 @@ public class Editor extends TextEditor implements IStepListener {
 		annotationModel = viewer.getProjectionAnnotationModel();
 
 		// register the editor scope context
-		IContextService service = (IContextService) getSite().getService(IContextService.class);
-		if (service != null) {
-			service.activateContext("cucumber.eclipse.editor.featureEditorScope");
+		IContextService contextService = (IContextService) getSite().getService(IContextService.class);
+		
+		if (contextService != null) {
+			contextService.activateContext("cucumber.eclipse.editor.featureEditorScope");
 		}
+		
+		((StyledText) getAdapter(Control.class)).addCaretListener(
+				new ScenarioScopeContextActivationCaretListener(contextService));
 	}
 
 	/* (non-Javadoc)
@@ -145,7 +154,7 @@ public class Editor extends TextEditor implements IStepListener {
 		oldAnnotations = newAnnotations.keySet().toArray(new Annotation[0]);
 	}
 	
-	TextSelection getSelection() {
+	public TextSelection getSelection() {
 		return (TextSelection) getSelectionProvider().getSelection();
 	}
 
@@ -231,6 +240,54 @@ public class Editor extends TextEditor implements IStepListener {
 			p.parse(doc.get(), "", 0);
 		} catch (LexingError l) {
 			markerManager.add(MarkerIds.LEXING_ERROR, featureFile, IMarker.SEVERITY_ERROR, l.getLocalizedMessage(), 1, 0, 0);
+		}
+	}
+
+	private final class ScenarioScopeContextActivationCaretListener implements CaretListener {
+		
+		private final IContextService contextService;
+		
+		private IContextActivation activatedContext;
+
+		ScenarioScopeContextActivationCaretListener(IContextService contextService) {
+			this.contextService = contextService;
+		}
+
+		@Override
+		public void caretMoved(CaretEvent event) {
+			if (isInScenarioScope(event)) {
+				activateContextIfRequired();
+			}
+			else {
+				deactivateContextIfRequired();
+			}
+		}
+
+		private boolean isInScenarioScope(CaretEvent event) {
+			try {
+				return model != null
+					&& model.getScenarioOrScenarioOutline(event.caretOffset) != null;
+				
+			} catch (BadLocationException exception) {
+				Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+						String.format("Couldn't determine if in scenario context"), exception));
+				
+				return false;
+			}
+		}
+
+		private void activateContextIfRequired() {
+			if (activatedContext == null) {
+				activatedContext = contextService.activateContext(
+						"cucumber.eclipse.editor.featureEditorScenarioScope");
+			}
+		}
+
+		private void deactivateContextIfRequired() {
+			if (activatedContext != null) {
+				contextService.deactivateContext(activatedContext);
+				activatedContext = null;
+			}
 		}
 	}
 }

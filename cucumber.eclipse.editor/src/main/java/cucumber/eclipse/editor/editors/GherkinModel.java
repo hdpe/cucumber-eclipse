@@ -1,5 +1,13 @@
 package cucumber.eclipse.editor.editors;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.Position;
+
 import gherkin.formatter.Formatter;
 import gherkin.formatter.model.Background;
 import gherkin.formatter.model.BasicStatement;
@@ -12,14 +20,6 @@ import gherkin.formatter.model.Step;
 import gherkin.lexer.LexingError;
 import gherkin.parser.ParseError;
 import gherkin.parser.Parser;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.Position;
 
 public class GherkinModel {
 
@@ -45,12 +45,26 @@ public class GherkinModel {
 	}
 	
 	public PositionedElement getStepElement(int offset) throws BadLocationException {
-		for (PositionedElement element : elements) {
-			if (element.isStep() && element.toPosition().includes(offset)) {
-				return element;
-			}
+		PositionedElement element = getMostSpecificElement(offset);
+		return element != null && element.isStep() ? element : null;
+	}
+	
+	public BasicStatement getScenarioOrScenarioOutline(int offset) throws BadLocationException {
+		PositionedElement element = getMostSpecificElement(offset);
+		if (element == null) {
+			return null;
 		}
-		
+		if (element.isScenario() || element.isScenarioOutline()) {
+			return element.getStatement();
+		}
+		BasicStatement scenario = element.getContainingScenario();
+		if (scenario != null) {
+			return scenario;
+		}
+		BasicStatement scenarioOutline = element.getContainingScenarioOutline();
+		if (scenarioOutline != null) {
+			return scenarioOutline;
+		}
 		return null;
 	}
 
@@ -150,5 +164,19 @@ public class GherkinModel {
 		} catch (ParseError pe) {
 			// TODO: log
 		}
+	}
+	
+	private PositionedElement getMostSpecificElement(int offset) throws BadLocationException {
+		PositionedElement featureElement = getFeatureElement();
+		return featureElement == null ? null : getMostSpecificElement(offset, featureElement);
+	}
+	
+	private PositionedElement getMostSpecificElement(int offset, PositionedElement searchFrom) throws BadLocationException {
+		for (PositionedElement element : searchFrom.getChildren()) {
+			if (element.toPosition().includes(offset)) {
+				return getMostSpecificElement(offset, element);
+			}
+		}
+		return searchFrom;
 	}
 }

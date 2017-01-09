@@ -36,6 +36,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		runConfig.setWorkingDirectory(getWorkingDirectory(config).getAbsolutePath());
 		
 		String featurePath = "" ;
+		int lineNumber = -1;
 		String gluePath = "";
 		boolean isMonochrome = false;
 		boolean isPretty = false;
@@ -47,6 +48,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		boolean isUsage= false;
 		
 		featurePath = substituteVar(config.getAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePath));
+		lineNumber = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_LINE_NUMBER, -1);
 		gluePath  = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_GLUE_PATH, gluePath);
 		isMonochrome = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_IS_MONOCHROME, isMonochrome);
 		isPretty = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_IS_PRETTY,isPretty );
@@ -73,7 +75,13 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		String formatter = "--plugin"; // Cucumber-JVM's --format option is deprecated. Please use --plugin instead.
 		Collection<String> args = new ArrayList<String>();
 		//String[] args = new String[6];
-		args.add(featurePath);
+		
+		String featureLocation = featurePath;
+		if (lineNumber > -1) {
+			featureLocation += ":" + lineNumber;
+		}
+		
+		args.add(featureLocation);
 		args.add(glue);
 		args.add(gluePath);
 		

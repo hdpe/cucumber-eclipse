@@ -198,6 +198,39 @@
        </enablement>
      </contextualLaunch>
     </shortcut>
+    <shortcut
+        id="cucumber.eclipse.launching.scenarioLaunchShortcut"
+        class="cucumber.eclipse.launching.CucumberScenarioLaunchShortcut"
+        label="Scenario"
+        icon="icons/cukes.gif"
+        modes="run, debug">
+        <configurationType
+        id="cucumber.eclipse.launching.localCucumberFeature">
+        </configurationType>
+           <contextualLaunch>
+         <contextLabel mode="run" label="Cucumber Scenario" />
+         <contextLabel mode="debug" label="Cucumber Scenario" />
+         <enablement>
+         	<and>
+           <with variable="selection">
+           	<count value="1"/>
+          	<iterate>
+            	<adapt type="org.eclipse.core.resources.IResource">
+	                <test property="org.eclipse.core.resources.name" value="*.feature"/>
+		        </adapt>
+          	</iterate>
+           </with>
+           <with variable="activeContexts">
+          	<iterate ifEmpty="false" operator="or">
+            	<equals
+                   value="cucumber.eclipse.editor.featureEditorScenarioScope">
+            	</equals>
+          	</iterate>
+           </with>
+         	</and>
+       </enablement>
+     </contextualLaunch>
+    </shortcut>
 </extension>
     <extension
            id="cucumber.eclipse.editor.editors.Editor.syntaxerror"
@@ -265,6 +298,11 @@
        <context
              id="cucumber.eclipse.editor.featureEditorScope"
              name="Editing Feature"
+             parentId="org.eclipse.ui.contexts.window">
+       </context>
+       <context
+             id="cucumber.eclipse.editor.featureEditorScenarioScope"
+             name="Editing Scenario or Scenario Outline"
              parentId="org.eclipse.ui.contexts.window">
        </context>
     </extension>

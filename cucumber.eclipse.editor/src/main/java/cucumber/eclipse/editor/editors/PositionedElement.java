@@ -22,6 +22,7 @@ public class PositionedElement {
 	private int endOffset = -1;
 	private IDocument document;
 	private List<PositionedElement> children = new ArrayList<PositionedElement>();
+	private PositionedElement parent;
 
 	PositionedElement(IDocument doc, BasicStatement stmt) {
 		this.statement = stmt;
@@ -30,6 +31,7 @@ public class PositionedElement {
 
 	void addChild(PositionedElement child) {
 		children.add(child);
+		child.parent = this;
 	}
 	
 	private static int getDocumentLine(int line) {
@@ -81,6 +83,24 @@ public class PositionedElement {
 	
 	public boolean isStepContainer() {
 		return isBackground() || isScenarioOutline() || isScenario();
+	}
+
+	public Scenario getContainingScenario() {
+		for (PositionedElement check = parent; check != null; check = check.parent) {
+			if (check.isScenario()) {
+				return (Scenario) check.getStatement();
+			}
+		}
+		return null;
+	}
+	
+	public ScenarioOutline getContainingScenarioOutline() {
+		for (PositionedElement check = parent; check != null; check = check.parent) {
+			if (check.isScenarioOutline()) {
+				return (ScenarioOutline) check.getStatement();
+			}
+		}
+		return null;
 	}
 
 	public Position toPosition() throws BadLocationException {

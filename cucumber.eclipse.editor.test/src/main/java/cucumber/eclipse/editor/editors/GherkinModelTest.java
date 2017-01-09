@@ -9,6 +9,7 @@ import org.eclipse.jface.text.Position;
 import org.junit.Test;
 
 import gherkin.formatter.model.BasicStatement;
+import gherkin.formatter.model.Scenario;
 
 public class GherkinModelTest {
 
@@ -140,5 +141,41 @@ public class GherkinModelTest {
 				.getStatement();
 
 		assertThat(statement.getName(), is("y"));
-	}
+	}		
+    
+    @Test
+    public void getScenarioOrScenarioOutlineInScenarioReturnsScenario() throws BadLocationException {
+    	String source = "Feature: x\n"
+    			+ "\n"
+    			+ "  Scenario: 1\n"
+    			+ "    Given y\n"
+    			+ "\n"
+    			+ "  Scenario: 2\n"
+    			+ "    Given z\n";
+    	Document document = new Document(source);        
+    	GherkinModel model = new GherkinModel();
+    	model.updateFromDocument(document);
+    	
+    	BasicStatement actual = model.getScenarioOrScenarioOutline(source.indexOf("Scenario: 1"));
+    	
+    	assertThat(((Scenario) actual).getName(), is("1"));
+    }
+    
+    @Test
+    public void getScenarioOrScenarioOutlineInScenarioStepReturnsScenario() throws BadLocationException {
+    	String source = "Feature: x\n"
+    			+ "\n"
+    			+ "  Scenario: 1\n"
+    			+ "    Given y\n"
+    			+ "\n"
+    			+ "  Scenario: 2\n"
+    			+ "    Given z\n";
+	    Document document = new Document(source);        
+	    GherkinModel model = new GherkinModel();
+	    model.updateFromDocument(document);
+	    
+	    BasicStatement actual = model.getScenarioOrScenarioOutline(source.indexOf("Given y"));
+	    
+	    assertThat(((Scenario) actual).getName(), is("1"));
+    }
 }
